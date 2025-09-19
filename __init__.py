@@ -1,3 +1,11 @@
+"""
+SnowMapPy: A comprehensive Python package for processing MODIS NDSI data
+"""
+
+__version__ = "1.0.3"
+__author__ = "Haytam Elyoussfi"
+__email__ = "haytam.elyoussfi@um6p.ma"
+
 # SnowMapPy Package
 # A comprehensive package for MODIS snow cover time series processing
 
@@ -22,8 +30,6 @@ from .cloud import (
     modis_time_series_cloud, process_modis_ndsi_cloud, process_files_array as cloud_process_files_array,
     load_modis_cloud_data, initialize_earth_engine
 )
-
-__version__ = "2.0.0"
 
 __all__ = [
     # Core functionality

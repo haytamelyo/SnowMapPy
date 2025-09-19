@@ -3,8 +3,13 @@ numpy==2.1.0
 scipy==1.15.2
 pandas==2.2.3
 
+# Python packaging and utilities
+setuptools==75.1.0
+pycrs==1.0.2
+
 # Geospatial processing
 rasterio==1.4.3
+rioxarray==0.19.0
 geopandas==1.0.1
 pyproj==3.7.1
 shapely==2.1.0
@@ -20,6 +25,7 @@ netCDF4==1.7.2
 # Google Earth Engine
 earthengine-api==1.5.9
 geemap==0.35.3
+xee==0.0.20
 
 # Progress bars and utilities
 tqdm==4.66.4

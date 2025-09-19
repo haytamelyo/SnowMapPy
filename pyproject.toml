@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "SnowMapPy"
+version = "1.0.3"
+description = "A comprehensive Python package for processing MODIS NDSI data from local files and Google Earth Engine"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Haytam Elyoussfi", email = "haytam.elyoussfi@um6p.ma" },
+    { name = "Hatim Bechri", email = "Hatim.bechri@usms.ac.ma" }
+]
+keywords = ["modis", "snow", "remote sensing", "earth engine", "gis", "hydrology"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Atmospheric Science"
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "xarray",
+    "rasterio",
+    "geopandas",
+    "earthengine-api"
+]
+requires-python = ">=3.8"
+urls = { "Bug Reports" = "https://github.com/haytamelyo/SnowMapPy/issues", "Source" = "https://github.com/haytamelyo/SnowMapPy", "Documentation" = "https://github.com/haytamelyo/SnowMapPy#readme" }
+optional-dependencies = { dev = ["pytest>=6.0", "flake8>=3.8", "black>=21.0"] }
+dynamic = []
