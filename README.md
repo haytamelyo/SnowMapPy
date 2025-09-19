@@ -4,15 +4,16 @@ A comprehensive Python package for processing MODIS NDSI (Normalized Difference 
 
 ## 📋 Table of Contents
 
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Package Structure](#package-structure)
-- [Usage Examples](#usage-examples)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
+- [✨ Features](#-features)
+- [🚀 Installation](#-installation)
+- [🎯 Quick Start](#-quick-start)
+- [📁 Package Structure](#-package-structure)
+- [📖 Usage Examples](#-usage-examples)
+- [🧪 Testing](#-testing)
+- [🔧 Troubleshooting](#-troubleshooting)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [🙏 Acknowledgments](#-acknowledgments)
 
 ## ✨ Features
 
