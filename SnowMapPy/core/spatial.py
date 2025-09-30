@@ -9,9 +9,7 @@ from .data_io import save_as_zarr
 
 
 def check_overlap(src, roi):
-    """
-    Check if the bounding box of the ROI overlaps with the raster.
-    """
+    """Check if ROI bounding box overlaps with raster bounds."""
     raster_bounds = src.bounds
     roi_bounds = roi.total_bounds
     
@@ -23,9 +21,7 @@ def check_overlap(src, roi):
 
 
 def clip_dem_to_roi(dem_path, roi, save_dir, file_name, oparams_file=None):
-    """
-    Clip the DEM to the region of interest (ROI).
-    """
+    """Clip DEM to region of interest and save as xarray Dataset."""
     os.environ['SHAPE_RESTORE_SHX'] = 'YES'
 
     with rasterio.open(dem_path) as src:
@@ -33,12 +29,14 @@ def clip_dem_to_roi(dem_path, roi, save_dir, file_name, oparams_file=None):
         transform = src.transform
         crs = src.crs
 
+    # Handle common nodata values
     DEM[DEM == 65536] = np.nan
 
     with rasterio.open(dem_path) as src:
         DEM_clipped, out_transform = rasterio_mask(src, [roi.geometry.iloc[0]], crop=True, all_touched=True, pad=True)
         DEM_clipped = DEM_clipped[0]
 
+    # Create ROI mask
     ROI_mask = geometry_mask(roi.geometry, transform=out_transform, invert=True, out_shape=DEM_clipped.shape)
     ROI_mask = np.where(ROI_mask == 0, np.nan, 1)
 
@@ -47,6 +45,7 @@ def clip_dem_to_roi(dem_path, roi, save_dir, file_name, oparams_file=None):
 
     DEM_ROI = DEM_clipped * ROI_mask
 
+    # Generate coordinate arrays
     bounds = rasterio.transform.array_bounds(DEM_ROI.shape[0], DEM_ROI.shape[1], transform)
     X, Y = np.meshgrid(np.linspace(bounds[0], bounds[2], DEM_ROI.shape[1]),
                        np.linspace(bounds[3], bounds[1], DEM_ROI.shape[0]))
@@ -74,9 +73,7 @@ def clip_dem_to_roi(dem_path, roi, save_dir, file_name, oparams_file=None):
 
 
 def reproject_raster(src_path, dst_path, src_transform, src_crs, dst_transform, dst_crs, shape, method=Resampling.nearest):
-    """
-    Reproject a raster.
-    """
+    """Reproject raster from source to destination CRS."""
     with rasterio.open(src_path) as src:
         kwargs = src.meta.copy()
         kwargs.update({
@@ -100,16 +97,12 @@ def reproject_raster(src_path, dst_path, src_transform, src_crs, dst_transform, 
 
 
 def reproject_shp(roi, target_crs):
-    """
-    Reproject a GeoDataFrame (ROI) to match raster CRS.
-    """
+    """Reproject shapefile to match target CRS."""
     return roi.to_crs(target_crs)
 
 
 def handle_reprojection(modis_path, dem_path, output_path, priority='MODIS'):
-    """
-    Process data and reproject based on the priority (MODIS or DEM).
-    """
+    """Reproject data based on priority (MODIS or DEM CRS)."""
     if priority == 'MODIS':
         with rasterio.open(modis_path) as modis_src:
             modis_transform = modis_src.transform
@@ -128,4 +121,4 @@ def handle_reprojection(modis_path, dem_path, output_path, priority='MODIS'):
 
         reproject_raster(modis_path, output_path, src_transform=None, 
                          src_crs=None, dst_transform=dem_transform,
-                         dst_crs=dem_crs, shape=dem_shape) 
+                         dst_crs=dem_crs, shape=dem_shape)

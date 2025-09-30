@@ -23,9 +23,7 @@ from numcodecs.zarr3 import Zstd, Blosc, Zlib, BZ2, LZMA, LZ4
 
 
 def optimal_combination(data, save_dir=None, vname=None, chunk_factors=None, compressors=None, sample_size=256):
-    """
-    Compute optimal compressor settings on a sample of the data variable from an xarray.Dataset.
-    """
+    """Find optimal compression settings by testing different combinations on a data sample."""
     if save_dir is None:
         save_dir = os.getcwd()
     if vname is None:
@@ -92,9 +90,7 @@ def optimal_combination(data, save_dir=None, vname=None, chunk_factors=None, com
 
 
 def save_as_zarr(ds: xr.Dataset, output_folder: str, file_name: str, params_file: str = None) -> str:
-    """
-    Save an xarray.Dataset as an optimized Zarr store in the specified output folder.
-    """
+    """Save xarray Dataset as optimized Zarr store."""
     if not output_folder:
         raise ValueError("Output folder must be provided.")
     os.makedirs(output_folder, exist_ok=True)
@@ -108,7 +104,7 @@ def save_as_zarr(ds: xr.Dataset, output_folder: str, file_name: str, params_file
         compressor_name = params.get('compressor', 'zstd')
         chunk_size = params.get('chunk_size', (64, 64, 1))
         
-        # Map compressor names to actual compressors
+        # Available compressors
         compressors = {
             'zlib': Zlib(level=5),
             'bz2': BZ2(level=9),
@@ -130,7 +126,7 @@ def save_as_zarr(ds: xr.Dataset, output_folder: str, file_name: str, params_file
         
         ds.to_zarr(zarr_path, mode='w', encoding=encoding)
     else:
-        # Default encoding if no params file
+        # Default compression if no optimization params
         encoding = {}
         for var in ds.data_vars:
             encoding[var] = {
@@ -143,9 +139,7 @@ def save_as_zarr(ds: xr.Dataset, output_folder: str, file_name: str, params_file
 
 
 def basic_save_as_zarr(NDSI, save_dir, file_name, DateSve):
-    """
-    Basic save function for NDSI data.
-    """
+    """Basic save function for NDSI data."""
     ds = xr.Dataset(
         data_vars={'NDSI': (('lat', 'lon'), NDSI)},
         coords={'time': [DateSve]}
@@ -154,9 +148,7 @@ def basic_save_as_zarr(NDSI, save_dir, file_name, DateSve):
 
 
 def load_or_create_nan_array(directory, filename, shape):
-    """
-    Load data from zarr file or create nan array if file doesn't exist.
-    """
+    """Load data from zarr file or create nan array if file doesn't exist."""
     file_path = os.path.join(directory, filename)
     if os.path.exists(file_path):
         return zarr.open(file_path, mode='r')['NDSI'][:]
@@ -165,16 +157,12 @@ def load_or_create_nan_array(directory, filename, shape):
 
 
 def load_dem_and_nanmask(demdir):
-    """
-    Load DEM data and create nan mask.
-    """
+    """Load DEM data and create nan mask."""
     dem = zarr.open(demdir, mode='r')['elevation'][:]
     nanmask = np.isnan(dem)
     return dem, nanmask
 
 
 def load_shapefile(shp_path):
-    """
-    Load shapefile using geopandas.
-    """
-    return gpd.read_file(shp_path) 
+    """Load shapefile using geopandas."""
+    return gpd.read_file(shp_path)
