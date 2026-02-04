@@ -1,3 +1,13 @@
+"""
+Utility Functions
+=================
+
+Helper functions for file handling and date manipulation.
+
+Authors: Haytam Elyoussfi, Hatim Bechri
+Version: 2.0.0
+"""
+
 import os
 import zarr
 import datetime

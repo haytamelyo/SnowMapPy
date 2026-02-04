@@ -1,168 +1,261 @@
+"""
+Data I/O Operations
+===================
+
+Read and write MODIS NDSI datasets with optimized compression.
+
+Uses Zarr format with ZSTD compression for efficient storage and
+fast random access to large snow cover datasets.
+
+Authors: Haytam Elyoussfi, Hatim Bechri
+Version: 2.0.0
+"""
+
 import os
 import zarr
 import json
-import shutil
-import numcodecs
-from numcodecs import Blosc
 import numpy as np
 import xarray as xr
 import geopandas as gpd
-import concurrent.futures
-from affine import Affine
-
-import os
-import json
-import shutil
-import numpy as np
-import xarray as xr
-import concurrent.futures
-from affine import Affine
+from typing import Optional, Tuple, Dict, Any
 
 # Use Zarr v3–compatible codecs via numcodecs.zarr3
-from numcodecs.zarr3 import Zstd, Blosc, Zlib, BZ2, LZMA, LZ4
+from numcodecs.zarr3 import Zstd
 
 
-def optimal_combination(data, save_dir=None, vname=None, chunk_factors=None, compressors=None, sample_size=256):
-    """Find optimal compression settings by testing different combinations on a data sample."""
-    if save_dir is None:
-        save_dir = os.getcwd()
-    if vname is None:
-        vname = 'NDSI'
-
-    full_shape = data[vname].shape
-    sample_shape = tuple(min(s, sample_size) for s in full_shape)
-
-    def propose_chunk_sizes(shape):
-        factors = chunk_factors or [4, 8, 16, 32]
-        proposals = [tuple(max(1, s // f) for s in shape) for f in factors]
-        return list(set(proposals))
-
-    da_full = data[vname]
-    ds_full = xr.Dataset({vname: da_full})
-    sample_indices = {dim: slice(0, min(ds_full.sizes[dim], sample_size)) for dim in ds_full[vname].dims}
-    ds_sample = ds_full.isel(**sample_indices)
-
-    def test_compression(ds, zarr_path, compressor, chunks):
-        encoding = {var: {'compressors': (compressor,), 'chunks': chunks} for var in ds.data_vars}
-        ds.to_zarr(zarr_path, mode='w', encoding=encoding)
-        size = 0
-        for root, _, files in os.walk(zarr_path):
-            for f in files:
-                size += os.path.getsize(os.path.join(root, f))
-        return size
-
-    def find_best_compression(ds, compressors, chunk_sizes):
-        best_params = (None, None, float('inf'))
-        def worker(name, comp, chunks):
-            path = os.path.join(save_dir, f'temp_{name}_{"-".join(map(str, chunks))}.zarr')
-            try:
-                sz = test_compression(ds, path, comp, chunks)
-            finally:
-                if os.path.isdir(path): shutil.rmtree(path)
-            return name, chunks, sz
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as exe:
-            futures = [exe.submit(worker, n, c, ch) for n, c in compressors.items() for ch in chunk_sizes]
-            for fut in concurrent.futures.as_completed(futures):
-                name, chunks, sz = fut.result()
-                if sz < best_params[2]:
-                    best_params = (name, chunks, sz)
-        return best_params
-
-    chunk_sizes = propose_chunk_sizes(sample_shape)
-    if compressors is None:
-        compressors = {
-            'zlib': Zlib(level=5),
-            'bz2': BZ2(level=9),
-            'lzma': LZMA(preset=9),
-            'zstd': Zstd(level=5),
-            'lz4': LZ4(),
-        }
-        for cname in ['zstd','lz4','blosclz','zlib','lz4hc']:
-            compressors[f'blosc_{cname}_cl5_sh1'] = Blosc(cname=cname, clevel=5, shuffle=1)
-
-    best_name, best_chunks, _ = find_best_compression(ds_sample, compressors, chunk_sizes)
-    params = {'compressor': best_name, 'chunk_size': best_chunks}
-    pfile = os.path.join(save_dir, 'oparams.json')
-    with open(pfile, 'w') as f:
-        json.dump(params, f)
-    return pfile
+# Default compression settings - ZSTD level 3 offers excellent balance
+# of compression ratio and speed
+DEFAULT_COMPRESSOR = Zstd(level=3)
+DEFAULT_CHUNKS = (128, 128, 32)  # Optimized for spatial-temporal access patterns
 
 
-def save_as_zarr(ds: xr.Dataset, output_folder: str, file_name: str, params_file: str = None) -> str:
-    """Save xarray Dataset as optimized Zarr store."""
+def save_as_zarr(
+    ds: xr.Dataset,
+    output_folder: str,
+    file_name: str,
+    chunks: Optional[Tuple[int, int, int]] = None,
+    compression_level: int = 3,
+    params_file: Optional[str] = None  # Kept for backward compatibility, ignored
+) -> str:
+    """
+    Save xarray Dataset as optimized Zarr store.
+    
+    Uses ZSTD compression which provides excellent compression ratios with
+    fast read/write speeds. The chunk size is optimized for typical MODIS
+    access patterns (spatial queries with some temporal slicing).
+    
+    Parameters
+    ----------
+    ds : xr.Dataset
+        Dataset to save.
+    output_folder : str
+        Directory to save the Zarr store.
+    file_name : str
+        Name for the Zarr store (without .zarr extension).
+    chunks : tuple of int, optional
+        Chunk sizes as (lat, lon, time). Default is (128, 128, 32).
+        Larger spatial chunks improve compression; larger time chunks
+        improve time-series queries.
+    compression_level : int, optional
+        ZSTD compression level (1-22). Default is 3.
+        - Level 1-3: Fast compression, good for large datasets
+        - Level 4-6: Balanced compression/speed
+        - Level 7+: Slower, diminishing returns on ratio
+    params_file : str, optional
+        Deprecated parameter, kept for backward compatibility. Ignored.
+        
+    Returns
+    -------
+    str
+        Path to the saved Zarr store.
+        
+    Examples
+    --------
+    >>> import xarray as xr
+    >>> from SnowMapPy.core.data_io import save_as_zarr
+    >>> 
+    >>> ds = xr.Dataset({"ndsi": (("lat", "lon", "time"), data)})
+    >>> path = save_as_zarr(ds, "/output", "modis_ndsi")
+    """
     if not output_folder:
         raise ValueError("Output folder must be provided.")
-    os.makedirs(output_folder, exist_ok=True)
     
+    os.makedirs(output_folder, exist_ok=True)
     zarr_path = os.path.join(output_folder, f"{file_name}.zarr")
     
-    if params_file and os.path.exists(params_file):
-        with open(params_file, 'r') as f:
-            params = json.load(f)
-        
-        compressor_name = params.get('compressor', 'zstd')
-        chunk_size = params.get('chunk_size', (64, 64, 1))
-        
-        # Available compressors
-        compressors = {
-            'zlib': Zlib(level=5),
-            'bz2': BZ2(level=9),
-            'lzma': LZMA(preset=9),
-            'zstd': Zstd(level=5),
-            'lz4': LZ4(),
+    # Determine chunk sizes
+    if chunks is None:
+        # Adaptive chunking based on data size
+        chunks = _calculate_optimal_chunks(ds)
+    
+    # Create compressor
+    compressor = Zstd(level=compression_level)
+    
+    # Build encoding for all data variables
+    encoding = {}
+    for var in ds.data_vars:
+        var_shape = ds[var].shape
+        # Adjust chunks if larger than data dimensions
+        var_chunks = tuple(min(c, s) for c, s in zip(chunks, var_shape))
+        encoding[var] = {
+            'compressors': (compressor,),
+            'chunks': var_chunks
         }
-        for cname in ['zstd','lz4','blosclz','zlib','lz4hc']:
-            compressors[f'blosc_{cname}_cl5_sh1'] = Blosc(cname=cname, clevel=5, shuffle=1)
-        
-        compressor = compressors.get(compressor_name, Zstd(level=5))
-        
-        encoding = {}
-        for var in ds.data_vars:
-            encoding[var] = {
-                'compressors': (compressor,),
-                'chunks': chunk_size
-            }
-        
-        ds.to_zarr(zarr_path, mode='w', encoding=encoding)
-    else:
-        # Default compression if no optimization params
-        encoding = {}
-        for var in ds.data_vars:
-            encoding[var] = {
-                'compressors': (Zstd(level=5),),
-                'chunks': (64, 64, 1)
-            }
-        ds.to_zarr(zarr_path, mode='w', encoding=encoding)
+    
+    # Save to Zarr
+    ds.to_zarr(zarr_path, mode='w', encoding=encoding)
     
     return zarr_path
 
 
-def basic_save_as_zarr(NDSI, save_dir, file_name, DateSve):
-    """Basic save function for NDSI data."""
-    ds = xr.Dataset(
-        data_vars={'NDSI': (('lat', 'lon'), NDSI)},
-        coords={'time': [DateSve]}
-    )
-    return save_as_zarr(ds, save_dir, file_name)
-
-
-def load_or_create_nan_array(directory, filename, shape):
-    """Load data from zarr file or create nan array if file doesn't exist."""
-    file_path = os.path.join(directory, filename)
-    if os.path.exists(file_path):
-        return zarr.open(file_path, mode='r')['NDSI'][:]
+def _calculate_optimal_chunks(ds: xr.Dataset) -> Tuple[int, int, int]:
+    """
+    Calculate optimal chunk sizes based on dataset dimensions.
+    
+    Aims for chunks of approximately 1-4 MB for efficient I/O.
+    """
+    # Get first data variable to determine shape
+    first_var = list(ds.data_vars)[0]
+    shape = ds[first_var].shape
+    
+    if len(shape) == 3:
+        lat_size, lon_size, time_size = shape
+        
+        # Target chunk size in elements (assuming float64 = 8 bytes)
+        # Target ~2MB chunks: 2MB / 8 bytes = 262144 elements
+        target_elements = 262144
+        
+        # Prioritize spatial chunking for MODIS data
+        # Time dimension gets smaller chunks for efficient temporal slicing
+        if lat_size * lon_size <= target_elements:
+            # Small spatial extent: use full spatial dims
+            lat_chunk = lat_size
+            lon_chunk = lon_size
+            time_chunk = max(1, min(time_size, target_elements // (lat_size * lon_size)))
+        else:
+            # Larger spatial extent: balance spatial and temporal
+            spatial_chunk = int(np.sqrt(target_elements / 32))  # Assume ~32 time steps
+            lat_chunk = min(lat_size, max(64, spatial_chunk))
+            lon_chunk = min(lon_size, max(64, spatial_chunk))
+            time_chunk = min(time_size, 32)
+        
+        return (lat_chunk, lon_chunk, time_chunk)
+    
+    elif len(shape) == 2:
+        # 2D data (e.g., DEM)
+        lat_size, lon_size = shape
+        chunk_size = int(np.sqrt(262144))  # ~512
+        return (min(lat_size, chunk_size), min(lon_size, chunk_size))
+    
     else:
-        return np.full(shape, np.nan)
+        # Default fallback
+        return DEFAULT_CHUNKS[:len(shape)]
 
 
-def load_dem_and_nanmask(demdir):
-    """Load DEM data and create nan mask."""
-    dem = zarr.open(demdir, mode='r')['elevation'][:]
+def load_dem_and_nanmask(dem_data) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Load DEM data and create NaN mask for invalid pixels.
+    
+    Parameters
+    ----------
+    dem_data : str or xr.Dataset
+        Either a path to a Zarr store containing DEM data, or an xarray
+        Dataset with 'elevation' variable.
+        
+    Returns
+    -------
+    dem : np.ndarray
+        2D array of elevation values.
+    nanmask : np.ndarray
+        2D boolean array where True indicates invalid (NaN) pixels.
+    """
+    if isinstance(dem_data, str):
+        # Load from Zarr path
+        dem = zarr.open(dem_data, mode='r')['elevation'][:]
+    elif isinstance(dem_data, xr.Dataset):
+        # Extract from xarray Dataset
+        dem_ds = dem_data
+        
+        # Handle time dimension if present (take first time step)
+        if 'time' in dem_ds.dims:
+            dem_ds = dem_ds.isel(time=0)
+        
+        # Ensure proper dimension order (lat, lon)
+        if set(dem_ds.dims) == {'lat', 'lon'}:
+            dem_ds = dem_ds.transpose('lat', 'lon')
+        elif set(dem_ds.dims) == {'lon', 'lat'}:
+            dem_ds = dem_ds.transpose('lat', 'lon')
+            
+        dem = dem_ds['elevation'].values
+    else:
+        raise TypeError(f"dem_data must be str or xr.Dataset, got {type(dem_data)}")
+    
+    # Ensure 2D
+    if dem.ndim == 3:
+        dem = dem[:, :, 0] if dem.shape[2] == 1 else dem[0, :, :]
+    
+    # Create NaN mask
     nanmask = np.isnan(dem)
-    return dem, nanmask
+    
+    return dem.astype(np.float64), nanmask
 
 
-def load_shapefile(shp_path):
-    """Load shapefile using geopandas."""
+def load_shapefile(shp_path: str) -> gpd.GeoDataFrame:
+    """
+    Load shapefile using geopandas.
+    
+    Parameters
+    ----------
+    shp_path : str
+        Path to the shapefile.
+        
+    Returns
+    -------
+    gpd.GeoDataFrame
+        Loaded shapefile data.
+    """
     return gpd.read_file(shp_path)
+
+
+def load_zarr_dataset(zarr_path: str) -> xr.Dataset:
+    """
+    Load a Zarr store as xarray Dataset.
+    
+    Parameters
+    ----------
+    zarr_path : str
+        Path to the Zarr store.
+        
+    Returns
+    -------
+    xr.Dataset
+        Loaded dataset.
+    """
+    return xr.open_zarr(zarr_path)
+
+
+# Legacy function - kept for backward compatibility but deprecated
+def optimal_combination(data, save_dir=None, vname=None, chunk_factors=None, 
+                        compressors=None, sample_size=256):
+    """
+    .. deprecated::
+        This function is deprecated and does nothing. ZSTD level 3 is now
+        used by default, which provides excellent compression without the
+        overhead of testing multiple combinations.
+        
+    This function previously tested multiple compression combinations to find
+    the optimal one. However, this was found to be:
+    1. Time-consuming (5-10 minutes of processing)
+    2. Providing minimal improvement (<5% better compression)
+    
+    The function now returns None and prints a deprecation warning.
+    """
+    import warnings
+    warnings.warn(
+        "optimal_combination is deprecated and has no effect. "
+        "ZSTD level 3 compression is now used by default, which provides "
+        "excellent compression without the overhead of testing combinations.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    return None

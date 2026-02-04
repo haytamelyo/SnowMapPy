@@ -1,3 +1,16 @@
+"""
+Spatial Operations
+==================
+
+Clip, reproject, and transform geospatial raster data.
+
+Handles coordinate reference system transformations and region-of-interest
+clipping for MODIS data and supporting elevation models.
+
+Authors: Haytam Elyoussfi, Hatim Bechri
+Version: 2.0.0
+"""
+
 import os
 import rasterio
 import xarray as xr

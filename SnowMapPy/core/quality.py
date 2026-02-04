@@ -1,8 +1,15 @@
 """
-MODIS NDSI Quality Control Functions
+MODIS Quality Control
+=====================
 
-Quality control utilities for MODIS NDSI data using Snow_Cover_Class values.
-Based on Google Earth Engine MODIS documentation for filtering invalid pixels.
+Filter unreliable pixels using MODIS snow cover classification.
+
+The MODIS MOD10A1/MYD10A1 products include quality flags that identify
+clouds, water, night pixels, and other conditions where snow detection
+is unreliable. This module provides utilities for masking these pixels.
+
+Authors: Haytam Elyoussfi, Hatim Bechri
+Version: 2.0.0
 """
 
 import numpy as np

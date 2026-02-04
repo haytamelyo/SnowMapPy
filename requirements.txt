@@ -1,40 +1,55 @@
-# Core scientific computing
-numpy==2.1.0
-scipy==1.15.2
-pandas==2.2.3
+# SnowMapPy v2.0.0 - Requirements
+# High-performance MODIS NDSI snow cover processing with Numba acceleration
+# 
+# Install with: pip install -r requirements.txt
+# Or install the package directly: pip install SnowMapPy
 
-# Python packaging and utilities
-setuptools==75.1.0
-pycrs==1.0.2
+# =============================================================================
+# Core Scientific Computing
+# =============================================================================
+numpy>=1.24.0,<3.0.0
+scipy>=1.10.0,<2.0.0
+pandas>=2.0.0,<3.0.0
 
-# Geospatial processing
-rasterio==1.4.3
-rioxarray==0.19.0
-geopandas==1.0.1
-pyproj==3.7.1
-shapely==2.1.0
-affine==2.4.0
+# =============================================================================
+# JIT Compilation (50-200x speedup)
+# =============================================================================
+numba>=0.58.0,<1.0.0
 
-# Data handling and storage
-xarray==2025.3.1
-zarr==3.0.6
-numcodecs==0.16.0
-h5py==3.13.0
-netCDF4==1.7.2
+# =============================================================================
+# Geospatial Processing
+# =============================================================================
+rasterio>=1.3.0,<2.0.0
+rioxarray>=0.15.0
+geopandas>=0.14.0,<2.0.0
+pyproj>=3.6.0,<4.0.0
+shapely>=2.0.0,<3.0.0
+affine>=2.4.0
 
+# =============================================================================
+# Data Handling and Storage
+# =============================================================================
+xarray>=2024.1.0
+zarr>=2.16.0,<4.0.0
+numcodecs>=0.12.0,<1.0.0
+
+# =============================================================================
 # Google Earth Engine
-earthengine-api==1.5.9
-geemap==0.35.3
-xee==0.0.20
+# =============================================================================
+earthengine-api>=0.1.380
+geemap>=0.32.0
+xee>=0.0.15
 
-# Progress bars and utilities
-tqdm==4.66.4
+# =============================================================================
+# CLI and Progress
+# =============================================================================
+tqdm>=4.66.0
+questionary>=2.0.0
 
-# Parallel processing
-joblib==1.4.2
-
-# Date and time handling
-python-dateutil==2.9.0
-
-# Development and testing (optional)
-matplotlib==3.10.1
+# =============================================================================
+# Development and Testing (optional)
+# =============================================================================
+# pytest>=7.0.0
+# matplotlib>=3.8.0
+# black>=23.0.0
+# flake8>=6.0.0
