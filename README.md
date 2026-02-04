@@ -3,11 +3,8 @@
 [![PyPI version](https://badge.fury.io/py/SnowMapPy.svg)](https://badge.fury.io/py/SnowMapPy)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo-blue.svg)](https://doi.org/10.5281/zenodo)
 
-**Version 2.0.0** — High-performance MODIS snow cover processing with Numba acceleration
-
-A scientifically robust Python package for processing MODIS NDSI (Normalized Difference Snow Index) data from Google Earth Engine. Version 2.0 delivers **50-200x faster processing** through Numba JIT compilation, implementing peer-reviewed gap-filling algorithms for accurate Snow Cover Area (SCA) estimation.
+A Python package for processing MODIS NDSI (Normalized Difference Snow Index) data from Google Earth Engine. SnowMapPy implements peer-reviewed gap-filling algorithms for accurate Snow Cover Area (SCA) estimation in mountainous regions.
 
 ---
 
@@ -26,7 +23,6 @@ A scientifically robust Python package for processing MODIS NDSI (Normalized Dif
 - [Contributing](#-contributing)
 - [Citation](#-citation)
 - [License](#-license)
-- [Acknowledgments](#-acknowledgments)
 
 ---
 
@@ -66,9 +62,9 @@ SnowMapPy addresses these gaps through a scientifically validated approach combi
 3. **Quality-controlled filtering** (MODIS class-based masking)
 4. **Elevation-aware spatial correction** (DEM-based snow fill)
 
-### Validation Heritage
+### Scientific Foundation
 
-The algorithms implemented in SnowMapPy are based on methodologies validated in peer-reviewed literature for snow cover mapping in mountainous regions, including applications in the Atlas Mountains (Morocco), European Alps, and High Mountain Asia.
+The algorithms implemented in SnowMapPy are based on methodologies validated in peer-reviewed literature for snow cover mapping in mountainous regions, including applications in the Atlas Mountains (Morocco).
 
 ---
 
@@ -77,12 +73,11 @@ The algorithms implemented in SnowMapPy are based on methodologies validated in 
 | Feature | Description |
 |---------|-------------|
 | 🌐 **Cloud Processing** | Direct integration with Google Earth Engine for MODIS data access |
-| ⚡ **High Performance** | Numba JIT compilation delivers 50-200x speedup over pure Python |
 | 🔄 **Sensor Fusion** | Combines Terra (MOD10A1) and Aqua (MYD10A1) for maximum coverage |
 | 🔍 **Quality Control** | MODIS NDSI_Snow_Cover_Class filtering removes clouds and errors |
 | ⏰ **Gap Filling** | Three interpolation methods: nearest-neighbor, linear, cubic spline |
 | 🏔️ **Elevation Correction** | DEM-based snow fill for high-altitude gaps above 1000m |
-| 📊 **Zarr Output** | Efficient ZSTD-compressed storage for large time series |
+| 📊 **Zarr Output** | Efficient compressed storage for large time series |
 | 🖥️ **Interactive CLI** | User-friendly command-line interface with guided prompts |
 | 📈 **Pixel Counters** | Optional diagnostics for tracking gap-filling statistics |
 
@@ -310,9 +305,9 @@ No spatial correction applied. Only temporal interpolation is used.
 
 | Method | Speed | Smoothness | Use Case |
 |--------|-------|------------|----------|
-| `nearest` | ⚡⚡⚡ Fastest | Low | Operational monitoring, preserves extremes |
-| `linear` | ⚡⚡ Fast | Medium | General purpose, balanced approach |
-| `cubic` | ⚡ Slower | High | Research, smooth time series analysis |
+| `nearest` | Fast | Low | Operational monitoring, preserves extremes |
+| `linear` | Medium | Medium | General purpose, balanced approach |
+| `cubic` | Slower | High | Research, smooth time series analysis |
 
 ---
 
@@ -328,19 +323,14 @@ SnowMapPy/
 │   ├── auth.py              # GEE authentication utilities
 │   ├── loader.py            # Parallel data loading from GEE
 │   └── processor.py         # Main cloud processing pipeline
-├── core/                    # Shared functionality
-│   ├── __init__.py
-│   ├── console.py           # Rich console output formatting
-│   ├── data_io.py           # Data I/O operations (Zarr, shapefiles)
-│   ├── quality.py           # MODIS quality control functions
-│   ├── spatial.py           # Spatial operations (clipping, reprojection)
-│   ├── temporal.py          # Temporal interpolation algorithms
-│   └── utils.py             # Utility functions
-└── tests/                   # Test suite
+└── core/                    # Core functionality
     ├── __init__.py
-    ├── test_snowmappy.py    # Main test module
-    ├── test_cloud/          # Cloud processing tests
-    └── test_core/           # Core functionality tests
+    ├── console.py           # Console output formatting
+    ├── data_io.py           # Data I/O operations (Zarr, shapefiles)
+    ├── quality.py           # MODIS quality control functions
+    ├── spatial.py           # Spatial operations (clipping, reprojection)
+    ├── temporal.py          # Temporal interpolation algorithms
+    └── utils.py             # Utility functions
 ```
 
 ---
@@ -414,12 +404,11 @@ def process_modis_ndsi_cloud(
 | `EE_PROJECT` | Default GEE project name | None |
 | `SNOWMAPPY_VERBOSE` | Enable verbose output | `True` |
 
-### Performance Tuning
+### Performance Tips
 
-For large study areas (> 10,000 km²), consider:
+For large study areas (> 10,000 km²), consider processing in yearly chunks:
 
 ```python
-# Process in yearly chunks
 for year in range(2010, 2021):
     process_modis_ndsi_cloud(
         project_name="your-project",
@@ -458,15 +447,13 @@ earthengine authenticate
 
 **Issue**: Data loading takes very long
 
-**Explanation**: GEE limits concurrent connections. SnowMapPy uses parallel downloads (4 workers) but is ultimately limited by GEE server response times.
-
-**Tip**: Processing time scales approximately linearly with study area size and time range.
+**Explanation**: GEE limits concurrent connections. Processing time scales approximately linearly with study area size and time range.
 
 #### 4. CRS Mismatch
 
 **Error**: "Shapefile has no coordinate reference system"
 
-**Solution**: Ensure your shapefile includes a `.prj` file with valid CRS information. Reproject using QGIS or:
+**Solution**: Ensure your shapefile includes a `.prj` file with valid CRS information:
 ```python
 import geopandas as gpd
 gdf = gpd.read_file("input.shp")
@@ -484,7 +471,7 @@ gdf.to_file("output.shp")
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions!
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -510,7 +497,7 @@ If you use SnowMapPy in your research, please cite:
 ```bibtex
 @software{snowmappy2025,
   author       = {Elyoussfi, Haytam and Bechri, Hatim and Bousbaa, Mostafa},
-  title        = {SnowMapPy: High-Performance MODIS Snow Cover Processing},
+  title        = {SnowMapPy: MODIS Snow Cover Processing for Google Earth Engine},
   year         = {2025},
   version      = {2.0.0},
   publisher    = {GitHub},
@@ -518,26 +505,15 @@ If you use SnowMapPy in your research, please cite:
 }
 ```
 
-### Related Publications
+### Related Publication
 
-- Hall, D. K., & Riggs, G. A. (2016). MODIS/Terra Snow Cover Daily L3 Global 500m SIN Grid, Version 6. NASA NSIDC DAAC.
-- Gascoin, S., et al. (2015). A snow cover climatology for the Pyrenees from MODIS snow products. Hydrology and Earth System Sciences.
+Bousbaa, M., Boudhar, A., Kinnard, C., Elyoussfi, H., Karaoui, I., Eljabiri, Y., Bouamri, H., & Chehbouni, A. (2024). An accurate snow cover product for the Moroccan Atlas Mountains: Optimization of the MODIS NDSI index threshold and development of snow fraction estimation models. *International Journal of Applied Earth Observation and Geoinformation*, 129, 103851. https://doi.org/10.1016/j.jag.2024.103851
 
 ---
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **NASA** for MODIS data products
-- **Google Earth Engine** team for the cloud computing platform
-- **USGS/NASA LP DAAC** for the SRTM DEM
-- The open-source geospatial community (NumPy, Xarray, Rasterio, GeoPandas)
-- **Mohammed VI Polytechnic University (UM6P)** for supporting this research
 
 ---
 
@@ -550,5 +526,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <p align="center">
-  <strong>Made with ❄️ for the cryosphere research community</strong>
+  <strong>Made with ❄️ for the snow hydrology research community</strong>
 </p>

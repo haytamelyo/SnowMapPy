@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "SnowMapPy"
 version = "2.0.0"
-description = "High-performance MODIS NDSI snow cover processing with Numba acceleration for Google Earth Engine"
+description = "MODIS NDSI snow cover processing for Google Earth Engine"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
@@ -18,8 +18,7 @@ maintainers = [
 ]
 keywords = [
     "modis", "ndsi", "snow-cover", "remote-sensing", "earth-engine", 
-    "gis", "hydrology", "numba", "high-performance", "gap-filling",
-    "terra", "aqua", "cryosphere", "climate"
+    "gis", "hydrology", "gap-filling", "terra", "aqua", "cryosphere"
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
