@@ -280,13 +280,13 @@ MODIS NDSI_Snow_Cover_Class values used for filtering:
 | Class | Description | Action |
 |-------|-------------|--------|
 | 0 | Snow-free land | ✅ Keep |
-| 1 | Snow | ✅ Keep |
-| 11 | Cloud | ❌ Mask |
-| 25 | Missing data | ❌ Mask |
-| 37 | Lake/inland water | ❌ Mask |
-| 39 | Ocean | ❌ Mask |
-| 50 | No decision | ❌ Mask |
-| 100 | Night | ❌ Mask |
+| 100 | Snow | ✅ Keep |
+| 200 | Missing data | ❌ Mask |
+| 201 | No decision | ❌ Mask |
+| 211 | Night | ❌ Mask |
+| 237 | Inland water | ❌ Mask |
+| 239 | Ocean | ❌ Mask |
+| 250 | Cloud | ❌ Mask |
 | 254 | Detector saturated | ❌ Mask |
 | 255 | Fill value | ❌ Mask |
 
