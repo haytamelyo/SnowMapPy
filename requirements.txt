@@ -29,3 +29,4 @@ xee>=0.0.15
 # CLI and Progress
 tqdm>=4.66.0
 questionary>=2.0.0
+pyfiglet>=1.0.0

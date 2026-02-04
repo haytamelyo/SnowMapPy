@@ -225,21 +225,23 @@ def print_config(label, value):
 
 def print_banner(title=None):
     """Print the SnowMapPy ASCII art banner."""
-    # ASCII art for SNOWMAPPY
-    ascii_art = r"""
-   ██████  ███    ██  ██████  ██     ██ ███    ███  █████  ██████  ██████  ██    ██ 
-  ██       ████   ██ ██    ██ ██     ██ ████  ████ ██   ██ ██   ██ ██   ██  ██  ██  
-   █████   ██ ██  ██ ██    ██ ██  █  ██ ██ ████ ██ ███████ ██████  ██████    ████   
-       ██  ██  ██ ██ ██    ██ ██ ███ ██ ██  ██  ██ ██   ██ ██      ██         ██    
-  ██████   ██   ████  ██████   ███ ███  ██      ██ ██   ██ ██      ██         ██    
-"""
-    print()
-    # Print ASCII art in cyan/blue color
-    for line in ascii_art.strip().split('\n'):
-        print(cyan(line))
-    print()
-    print(f"           {dim('SnowMapPy v2.0.0')}  {dim('|')}  {dim('MODIS NDSI Processor')}")
-    print()
+    try:
+        import pyfiglet
+        ascii_art = pyfiglet.figlet_format('SnowMapPy', font='standard')
+        print()
+        # Print ASCII art in cyan color
+        for line in ascii_art.split('\n'):
+            if line.strip():  # Only print non-empty lines
+                print(cyan(line))
+        print()
+        print(f"           {dim('SnowMapPy v2.0.0')}  {dim('|')}  {dim('MODIS NDSI Processor')}")
+        print()
+    except ImportError:
+        # Fallback if pyfiglet is not available
+        print()
+        print(cyan(bold("  SnowMapPy v2.0.0")))
+        print(dim("  MODIS NDSI Processor"))
+        print()
 
 
 def print_complete(message=None, elapsed_seconds=None):
