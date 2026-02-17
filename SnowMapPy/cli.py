@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-SnowMapPy v2.0.0 - Interactive Command Line Interface
+SnowMapPy v1.0.0 - Interactive Command Line Interface
 
 Process MODIS NDSI data from Google Earth Engine with an interactive,
 user-friendly command-line interface.
@@ -395,7 +395,7 @@ def run_cli():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="SnowMapPy v2.0.0 - High-Performance MODIS NDSI Processing",
+        description="SnowMapPy v1.0.0 - High-Performance MODIS NDSI Processing",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Interactive Mode (recommended):
@@ -426,7 +426,7 @@ Examples:
     parser.add_argument('--crs', type=str, default='EPSG:4326', help='CRS (default: EPSG:4326)')
     parser.add_argument('--save-original', action='store_true', help='Save original data')
     parser.add_argument('--save-counters', action='store_true', help='Save pixel counters CSV')
-    parser.add_argument('--version', action='version', version='SnowMapPy v2.0.0')
+    parser.add_argument('--version', action='version', version='SnowMapPy v1.0.0')
     
     args = parser.parse_args()
     

@@ -8,7 +8,7 @@ Fetches Terra (MOD10A1) and Aqua (MYD10A1) daily snow products
 for a specified region and time period.
 
 Authors: Haytam Elyoussfi, Hatim Bechri, Mostafa Bousbaa
-Version: 2.0.0
+Version: 1.0.0
 """
 
 import os
@@ -53,6 +53,7 @@ def _fix_proj_path():
 _fix_proj_path()
 
 import ee
+import numpy as np
 import geemap
 import xarray as xr
 import geopandas as gpd
@@ -117,10 +118,6 @@ def load_modis_cloud_data(project_name, shapefile_path, start_date, end_date, cr
     Fetches Terra (MOD10A1) and Aqua (MYD10A1) daily snow products,
     along with SRTM DEM data for the specified study area.
     
-    Note: Data is always loaded from Earth Engine in EPSG:4326 (geographic coordinates)
-    and then reprojected to the target CRS. This is because the xee library has issues
-    with projected CRS (like UTM) during data loading.
-    
     Parameters
     ----------
     project_name : str
@@ -133,38 +130,55 @@ def load_modis_cloud_data(project_name, shapefile_path, start_date, end_date, cr
         End date in 'YYYY-MM-DD' format.
     crs : str, optional
         Target coordinate reference system (default: 'EPSG:4326').
-        Data will be reprojected to this CRS after loading.
+        Reprojection is handled on the GEE server before data transfer.
         
     Returns
     -------
     tuple
         (terra_value, aqua_value, terra_class, aqua_class, dem, roi_gdf)
-        Clipped datasets and the region of interest GeoDataFrame.
+        Clipped datasets (Dask-backed for lazy loading) and the region of interest GeoDataFrame.
     """
-    # Always load from Earth Engine in geographic coordinates
-    # Then reproject to target CRS - xee has issues with projected CRS
-    load_crs = "EPSG:4326"
+    import gc
+    import dask.array as da
+    from ..core.utils import calculate_optimal_chunks, validate_modis_date_range, check_aqua_availability
+    
+    # MEMORY OPTIMIZATION: Load directly in target CRS from GEE
+    # GEE handles reprojection on the server side - no local memory needed!
     target_crs = crs
-    needs_reprojection = (target_crs != load_crs)
+    
+    # For geographic CRS, use degrees; for projected CRS, use meters
+    is_geographic = target_crs == "EPSG:4326"
     
     if not initialize_earth_engine(project_name):
         raise RuntimeError("Failed to initialize Earth Engine")
     
+    # Validate and adjust date range for MODIS availability
+    try:
+        start_date, end_date, dates_adjusted = validate_modis_date_range(
+            start_date, end_date, project_name=project_name, verbose=False
+        )
+    except ValueError as e:
+        print_error(f"Date validation error: {e}")
+        raise
+    
     # Check for SHX file issues before loading
     _check_and_restore_shx(shapefile_path)
     
-    # Load shapefile and reproject to EPSG:4326 for Earth Engine loading
+    # Load shapefile
     roi_original = gpd.read_file(shapefile_path)
     
-    # Keep original for final output, create EPSG:4326 version for EE loading
-    if roi_original.crs != load_crs:
-        roi_for_ee = roi_original.to_crs(load_crs)
+    # Reproject shapefile to target CRS for GEE clipping
+    if roi_original.crs != target_crs:
+        roi_for_ee = roi_original.to_crs(target_crs)
     else:
         roi_for_ee = roi_original.copy()
     
-    # Convert GeoDataFrame to Earth Engine geometry (must be in EPSG:4326)
+    # Also keep EPSG:4326 version for EE geometry conversion (required by geemap)
+    roi_wgs84 = roi_original.to_crs("EPSG:4326") if roi_original.crs != "EPSG:4326" else roi_original.copy()
+    
+    # Convert GeoDataFrame to Earth Engine geometry (must be in EPSG:4326 for geometry)
     try:
-        roi = geemap.gdf_to_ee(roi_for_ee)
+        roi = geemap.gdf_to_ee(roi_wgs84)
     except Exception as e:
         raise RuntimeError(
             f"Failed to convert shapefile to Earth Engine geometry. "
@@ -177,120 +191,177 @@ def load_modis_cloud_data(project_name, shapefile_path, start_date, end_date, cr
     terra = (ee.ImageCollection('MODIS/061/MOD10A1')
              .select(['NDSI_Snow_Cover', 'NDSI_Snow_Cover_Class'])
              .filterDate(start_date, end_date))
-    aqua = (ee.ImageCollection('MODIS/061/MYD10A1')
-            .select(['NDSI_Snow_Cover', 'NDSI_Snow_Cover_Class'])
-            .filterDate(start_date, end_date))
+    
+    # Check if Aqua data is available for this date range
+    aqua_info = check_aqua_availability(start_date, end_date)
+    aqua_available = aqua_info['aqua_available']
+    
+    if not aqua_available:
+        print_warning(aqua_info['reason'])
+        print_info("  → Processing will continue with Terra data only")
+        aqua = None
+    else:
+        # Use Aqua date range (may be adjusted if start_date < Aqua launch)
+        aqua_start = aqua_info['aqua_start_date']
+        aqua_end = aqua_info['aqua_end_date']
+        if aqua_info['reason']:
+            print_info(aqua_info['reason'])
+        aqua = (ee.ImageCollection('MODIS/061/MYD10A1')
+                .select(['NDSI_Snow_Cover', 'NDSI_Snow_Cover_Class'])
+                .filterDate(aqua_start, aqua_end))
+    
     srtm = ee.Image("USGS/SRTMGL1_003")
     
-    # Get scale and convert to degrees
-    scale = terra.first().projection().nominalScale().getInfo()
-    scale_deg = scale * 0.00001
+    # Get scale based on MODIS native resolution (~500m)
+    # For projected CRS: use meters; for geographic: use degrees
+    if is_geographic:
+        scale = terra.first().projection().nominalScale().getInfo()
+        scale_value = scale * 0.00001  # Convert to degrees
+    else:
+        # For projected CRS (e.g., UTM), use MODIS native scale in meters (~500m)
+        scale_value = 500  # meters
     
     geometry = roi.geometry()
-    roi_geo = [geometry.getInfo()]
     
-    # Load datasets sequentially in EPSG:4326 (Earth Engine native CRS)
-    # This avoids hanging issues with projected CRS in xee
+    # Load data from GEE server
     print_info("Loading Terra data from Earth Engine...")
-    ds_terra = xr.open_dataset(terra, engine='ee', crs=load_crs, scale=scale_deg, geometry=geometry)
-    print_info("  ✓ Terra data loaded")
+    ds_terra = xr.open_dataset(terra, engine='ee', crs=target_crs, scale=scale_value, geometry=geometry)
     
-    print_info("Loading Aqua data from Earth Engine...")
-    ds_aqua = xr.open_dataset(aqua, engine='ee', crs=load_crs, scale=scale_deg, geometry=geometry)
-    print_info("  ✓ Aqua data loaded")
+    # Load Aqua data only if available for this date range
+    if aqua_available:
+        print_info("Loading Aqua data from Earth Engine...")
+        ds_aqua = xr.open_dataset(aqua, engine='ee', crs=target_crs, scale=scale_value, geometry=geometry)
+    else:
+        ds_aqua = None
     
     print_info("Loading DEM data from Earth Engine...")
-    ds_dem = xr.open_dataset(ee.ImageCollection(srtm), engine='ee', crs=load_crs, scale=scale_deg, geometry=geometry)
-    print_info("  ✓ DEM data loaded")
+    ds_dem = xr.open_dataset(ee.ImageCollection(srtm), engine='ee', crs=target_crs, scale=scale_value, geometry=geometry)
+    
+    # Garbage collection after loading
+    gc.collect()
     
     # Split value and class data
     ds_terra_value = ds_terra[['NDSI_Snow_Cover']]
     ds_terra_class = ds_terra[['NDSI_Snow_Cover_Class']]
-    ds_aqua_value = ds_aqua[['NDSI_Snow_Cover']]
-    ds_aqua_class = ds_aqua[['NDSI_Snow_Cover_Class']]
     
-    # Set spatial dimensions and CRS for clipping
-    ds_terra_value = ds_terra_value.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
-    ds_terra_value = ds_terra_value.rio.write_crs(load_crs)
-    ds_terra_class = ds_terra_class.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
-    ds_terra_class = ds_terra_class.rio.write_crs(load_crs)
-    ds_aqua_value = ds_aqua_value.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
-    ds_aqua_value = ds_aqua_value.rio.write_crs(load_crs)
-    ds_aqua_class = ds_aqua_class.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
-    ds_aqua_class = ds_aqua_class.rio.write_crs(load_crs)
-    ds_dem = ds_dem.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
-    ds_dem = ds_dem.rio.write_crs(load_crs)
-    
-    # Clip datasets to study area (in EPSG:4326)
-    print_info("Clipping data to study area...")
-    ds_terra_value_clipped = ds_terra_value.rio.clip(roi_geo, load_crs, drop=False)
-    ds_terra_class_clipped = ds_terra_class.rio.clip(roi_geo, load_crs, drop=False)
-    ds_aqua_value_clipped = ds_aqua_value.rio.clip(roi_geo, load_crs, drop=False)
-    ds_aqua_class_clipped = ds_aqua_class.rio.clip(roi_geo, load_crs, drop=False)
-    ds_dem_clipped = ds_dem.rio.clip(roi_geo, load_crs, drop=False)
-    print_info("  ✓ All data clipped to study area")
-    
-    # Reproject to target CRS if needed
-    if needs_reprojection:
-        print_info(f"Reprojecting data to {target_crs}...")
-        
-        def reproject_dataset(ds, crs, resampling=None):
-            """Reproject dataset handling dimension order and renaming coords."""
-            result_vars = {}
-            
-            for var in ds.data_vars:
-                arr = ds[var]
-                dims = arr.dims
-                
-                # Find spatial dimensions
-                spatial_dims = [d for d in dims if d in ['lat', 'lon', 'y', 'x']]
-                other_dims = [d for d in dims if d not in spatial_dims]
-                
-                # Reorder to (other..., y, x) for reprojection
-                if spatial_dims:
-                    y_dim = 'lat' if 'lat' in spatial_dims else 'y'
-                    x_dim = 'lon' if 'lon' in spatial_dims else 'x'
-                    new_order = other_dims + [y_dim, x_dim]
-                    arr = arr.transpose(*new_order)
-                else:
-                    y_dim = 'lat'
-                    x_dim = 'lon'
-                
-                # Set spatial dims and CRS
-                arr = arr.rio.set_spatial_dims(x_dim=x_dim, y_dim=y_dim, inplace=False)
-                arr = arr.rio.write_crs(ds.rio.crs, inplace=False)
-                
-                # Reproject
-                if resampling is not None:
-                    arr = arr.rio.reproject(crs, resampling=resampling)
-                else:
-                    arr = arr.rio.reproject(crs)
-                
-                # Rename x/y back to lon/lat for consistency
-                if 'x' in arr.dims and 'y' in arr.dims:
-                    arr = arr.rename({'x': 'lon', 'y': 'lat'})
-                
-                result_vars[var] = arr
-            
-            # Create new dataset from reprojected arrays
-            result = xr.Dataset(result_vars)
-            result = result.rio.write_crs(crs)
-            
-            return result
-        
-        ds_terra_value_clipped = reproject_dataset(ds_terra_value_clipped, target_crs)
-        ds_terra_class_clipped = reproject_dataset(ds_terra_class_clipped, target_crs, resampling=0)  # Nearest for classes
-        ds_aqua_value_clipped = reproject_dataset(ds_aqua_value_clipped, target_crs)
-        ds_aqua_class_clipped = reproject_dataset(ds_aqua_class_clipped, target_crs, resampling=0)  # Nearest for classes
-        ds_dem_clipped = reproject_dataset(ds_dem_clipped, target_crs)
-        # Also reproject the ROI GeoDataFrame
-        roi_checker = roi_original.to_crs(target_crs) if roi_original.crs != target_crs else roi_original
-        print_info(f"  ✓ All data reprojected to {target_crs}")
+    if ds_aqua is not None:
+        ds_aqua_value = ds_aqua[['NDSI_Snow_Cover']]
+        ds_aqua_class = ds_aqua[['NDSI_Snow_Cover_Class']]
+        # Free original Aqua dataset
+        del ds_aqua
     else:
-        roi_checker = roi_for_ee
+        ds_aqua_value = None
+        ds_aqua_class = None
     
+    # Free original Terra dataset
+    del ds_terra
+    gc.collect()
     
-    print_success("All data loaded and clipped successfully")
+    # Detect spatial dimension names from loaded data
+    sample_dims = list(ds_terra_value.dims)
+    if 'x' in sample_dims and 'y' in sample_dims:
+        x_dim, y_dim = 'x', 'y'
+    elif 'lon' in sample_dims and 'lat' in sample_dims:
+        x_dim, y_dim = 'lon', 'lat'
+    else:
+        # Fallback: try to find spatial dims
+        x_dim = [d for d in sample_dims if d in ['x', 'lon', 'X', 'longitude']][0] if any(d in sample_dims for d in ['x', 'lon', 'X', 'longitude']) else sample_dims[-1]
+        y_dim = [d for d in sample_dims if d in ['y', 'lat', 'Y', 'latitude']][0] if any(d in sample_dims for d in ['y', 'lat', 'Y', 'latitude']) else sample_dims[-2]
+    
+    # Rename dimensions to standardized 'lon' and 'lat' for consistency across the pipeline
+    def standardize_dims(ds):
+        """Rename x/y to lon/lat for consistency."""
+        rename_dict = {}
+        if 'x' in ds.dims and 'x' != 'lon':
+            rename_dict['x'] = 'lon'
+        if 'X' in ds.dims and 'X' != 'lon':
+            rename_dict['X'] = 'lon'
+        if 'y' in ds.dims and 'y' != 'lat':
+            rename_dict['y'] = 'lat'
+        if 'Y' in ds.dims and 'Y' != 'lat':
+            rename_dict['Y'] = 'lat'
+        if rename_dict:
+            ds = ds.rename(rename_dict)
+        return ds
+    
+    ds_terra_value = standardize_dims(ds_terra_value)
+    ds_terra_class = standardize_dims(ds_terra_class)
+    if ds_aqua_value is not None:
+        ds_aqua_value = standardize_dims(ds_aqua_value)
+        ds_aqua_class = standardize_dims(ds_aqua_class)
+    ds_dem = standardize_dims(ds_dem)
+    
+    # Set spatial dimensions and CRS (data is already in target_crs from GEE)
+    ds_terra_value = ds_terra_value.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
+    ds_terra_value = ds_terra_value.rio.write_crs(target_crs)
+    ds_terra_class = ds_terra_class.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
+    ds_terra_class = ds_terra_class.rio.write_crs(target_crs)
+    if ds_aqua_value is not None:
+        ds_aqua_value = ds_aqua_value.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
+        ds_aqua_value = ds_aqua_value.rio.write_crs(target_crs)
+        ds_aqua_class = ds_aqua_class.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
+        ds_aqua_class = ds_aqua_class.rio.write_crs(target_crs)
+    ds_dem = ds_dem.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=False)
+    ds_dem = ds_dem.rio.write_crs(target_crs)
+    
+    # Clip datasets to study area
+    roi_geo = [roi_for_ee.geometry.values[0].__geo_interface__]
+    
+    ds_terra_value_clipped = ds_terra_value.rio.clip(roi_geo, target_crs, drop=False)
+    ds_terra_class_clipped = ds_terra_class.rio.clip(roi_geo, target_crs, drop=False)
+    if ds_aqua_value is not None:
+        ds_aqua_value_clipped = ds_aqua_value.rio.clip(roi_geo, target_crs, drop=False)
+        ds_aqua_class_clipped = ds_aqua_class.rio.clip(roi_geo, target_crs, drop=False)
+    else:
+        ds_aqua_value_clipped = None
+        ds_aqua_class_clipped = None
+    ds_dem_clipped = ds_dem.rio.clip(roi_geo, target_crs, drop=False)
+    
+    # Free unclipped datasets
+    del ds_terra_value, ds_terra_class, ds_dem
+    if ds_aqua_value is not None:
+        del ds_aqua_value, ds_aqua_class
+    gc.collect()
+    
+    # Apply Dask lazy loading with optimal chunking
+    sample_shape = ds_terra_value_clipped['NDSI_Snow_Cover'].shape
+    
+    # Calculate optimal chunks based on data dimensions
+    if len(sample_shape) == 3:
+        optimal_chunks = calculate_optimal_chunks(sample_shape, dtype=np.float32)
+        chunk_dict = {'lat': optimal_chunks[0], 'lon': optimal_chunks[1], 'time': optimal_chunks[2]}
+    else:
+        optimal_chunks = calculate_optimal_chunks(sample_shape, dtype=np.float32)
+        chunk_dict = {dim: optimal_chunks[i] for i, dim in enumerate(ds_terra_value_clipped.dims)}
+    
+    # Apply chunking to all datasets - this makes them Dask-backed and lazy
+    ds_terra_value_clipped = ds_terra_value_clipped.chunk(chunk_dict)
+    ds_terra_class_clipped = ds_terra_class_clipped.chunk(chunk_dict)
+    if ds_aqua_value_clipped is not None:
+        ds_aqua_value_clipped = ds_aqua_value_clipped.chunk(chunk_dict)
+        ds_aqua_class_clipped = ds_aqua_class_clipped.chunk(chunk_dict)
+    
+    # DEM may have a singleton time dimension - squeeze it out
+    if 'time' in ds_dem_clipped.dims:
+        ds_dem_clipped = ds_dem_clipped.isel(time=0, drop=True)
+    
+    # DEM has no time dimension - chunk only spatial dims
+    dem_dims = [d for d in ds_dem_clipped.dims if d in ('lat', 'lon')]
+    dem_chunks = {d: chunk_dict.get(d, -1) for d in dem_dims}
+    ds_dem_clipped = ds_dem_clipped.chunk(dem_chunks)
+    
+    # Sort latitude in descending order (north at top)
+    ds_terra_value_clipped = ds_terra_value_clipped.sortby('lat', ascending=False)
+    ds_terra_class_clipped = ds_terra_class_clipped.sortby('lat', ascending=False)
+    if ds_aqua_value_clipped is not None:
+        ds_aqua_value_clipped = ds_aqua_value_clipped.sortby('lat', ascending=False)
+        ds_aqua_class_clipped = ds_aqua_class_clipped.sortby('lat', ascending=False)
+    ds_dem_clipped = ds_dem_clipped.sortby('lat', ascending=False)
+    
+    roi_checker = roi_for_ee
+    
+    print_info("Clipping data to study area...")
+    print_success("Data loaded successfully")
     
     return (
         ds_terra_value_clipped,

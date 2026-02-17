@@ -1,0 +1,116 @@
+/* SnowMapPy Custom Styles */
+
+/* Hero section styling for index page */
+.md-typeset h1 {
+  font-weight: 700;
+}
+
+/* Primary button styling */
+.md-button--primary {
+  background-color: var(--md-primary-fg-color);
+  border-color: var(--md-primary-fg-color);
+}
+
+.md-button--primary:hover {
+  background-color: var(--md-primary-fg-color--dark);
+  border-color: var(--md-primary-fg-color--dark);
+}
+
+/* Grid cards for feature sections */
+.grid.cards > ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* Code block styling */
+.highlight pre {
+  border-radius: 0.5rem;
+}
+
+/* Admonition icon sizing */
+.md-typeset .admonition-title::before,
+.md-typeset summary::before {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+/* Table styling */
+.md-typeset table:not([class]) {
+  font-size: 0.85rem;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  font-weight: 600;
+}
+
+/* Dark mode table header */
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color);
+}
+
+/* Mermaid diagram styling */
+.mermaid {
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Terminal output styling */
+.highlight.language-text pre,
+.highlight.language-bash pre code {
+  background-color: #263238;
+  color: #aed581;
+}
+
+/* Badge styling in hero */
+.md-typeset img[alt*="badge"],
+.md-typeset img[alt*="Badge"],
+.md-typeset img[alt*="PyPI"],
+.md-typeset img[alt*="Python"],
+.md-typeset img[alt*="License"],
+.md-typeset img[alt*="Downloads"] {
+  display: inline-block;
+  margin: 0.2rem;
+}
+
+/* Footer adjustments */
+.md-footer-meta {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+/* TOC width on larger screens */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--secondary {
+    width: 14rem;
+  }
+}
+
+/* Snowflake emoji sizing */
+.md-typeset :is(.twemoji, .emojione, svg.emoji) {
+  height: 1.2em;
+}
+
+/* API reference styling */
+.doc-heading {
+  font-family: var(--md-code-font-family);
+  font-size: 1.1rem;
+}
+
+.doc-signature {
+  font-family: var(--md-code-font-family);
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  background-color: var(--md-code-bg-color);
+  border-radius: 0.25rem;
+}
+
+/* Print styles */
+@media print {
+  .md-sidebar,
+  .md-header,
+  .md-footer {
+    display: none;
+  }
+}

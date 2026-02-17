@@ -1,0 +1,24 @@
+# Include essential files
+include LICENSE
+include README.md
+include requirements.txt
+include pyproject.toml
+
+# Include all Python source files
+recursive-include SnowMapPy *.py
+
+# Exclude compiled files and caches
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude *.nbc
+global-exclude *.nbi
+
+# Exclude Jupyter notebooks
+global-exclude *.ipynb
+
+# Exclude test data
+global-exclude *.zarr
+global-exclude *.nc
+global-exclude *.tif
+global-exclude *.shp

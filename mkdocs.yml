@@ -1,0 +1,194 @@
+# SnowMapPy Documentation
+# https://snowmappy.github.io/SnowMapPy
+
+site_name: SnowMapPy
+site_url: https://haytamelyo.github.io/SnowMapPy
+site_author: Haytam Elyoussfi, Hatim Bechri, Mostafa Bousbaa
+site_description: >-
+  High-performance MODIS NDSI snow cover processing for Google Earth Engine
+  with Numba-accelerated gap-filling algorithms.
+
+repo_name: haytamelyo/SnowMapPy
+repo_url: https://github.com/haytamelyo/SnowMapPy
+edit_uri: edit/main/docs/
+
+copyright: Copyright &copy; 2025 Haytam Elyoussfi, Hatim Bechri, Mostafa Bousbaa
+
+# Theme Configuration
+theme:
+  name: material
+  custom_dir: docs/overrides
+  language: en
+  
+  # Logo and icons
+  icon:
+    logo: material/snowflake
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+  
+  # Color palette with dark/light mode toggle
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+  # Features
+  features:
+    # Navigation
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.indexes
+    - navigation.footer
+    
+    # Search
+    - search.suggest
+    - search.highlight
+    - search.share
+    
+    # Content
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+    
+    # Table of contents
+    - toc.follow
+
+# Extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      title: On this page
+  
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: haytamelyo
+      repo: SnowMapPy
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            docstring_style: numpy
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            heading_level: 2
+  - mkdocs-jupyter:
+      include_source: true
+      execute: false
+
+# Extra CSS/JS
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+# Extra configuration
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/haytamelyo/SnowMapPy
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/SnowMapPy
+  
+  generator: false
+  
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
+
+# Navigation structure
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: quickstart.md
+    - Google Earth Engine Setup: gee-setup.md
+  - User Guide:
+    - Overview: user-guide/index.md
+    - The Algorithm: user-guide/algorithm.md
+    - Interpolation Methods: user-guide/interpolation.md
+    - Spatial Correction: user-guide/spatial-correction.md
+    - Memory Optimization: user-guide/memory.md
+    - Output Formats: user-guide/output.md
+  - API Reference:
+    - Overview: api/index.md
+    - Core Module: api/core.md
+    - Cloud Module: api/cloud.md
+    - Core Utilities: api/core-utils.md
+  - Examples:
+    - Gallery: examples/index.md
+    - Basic Processing: examples/basic-processing.md
+    - Multi-Year Analysis: examples/multi-year.md
+    - Export Workflows: examples/export.md
+    - Visualization: examples/visualization.md
+  - CLI Reference: cli.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md

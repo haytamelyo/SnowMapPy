@@ -18,10 +18,12 @@ Version: 2.0.0
 
 from .data_io import (
     save_as_zarr,
+    save_as_zarr_optimized,
+    find_optimal_zarr_params,
     load_dem_and_nanmask,
     load_shapefile,
     load_zarr_dataset,
-    optimal_combination  # Deprecated, kept for backward compatibility
+    optimal_combination
 )
 
 from .spatial import (
@@ -51,7 +53,15 @@ from .utils import (
     extract_date,
     generate_file_lists,
     get_map_dimensions,
-    generate_time_series
+    generate_time_series,
+    validate_modis_date_range,
+    check_aqua_availability,
+    MODIS_FIRST_AVAILABLE_DATE,
+    MODIS_TERRA_FIRST_AVAILABLE_DATE,
+    MODIS_AQUA_FIRST_AVAILABLE_DATE,
+    prompt_user_date_adjustment,
+    calculate_optimal_chunks,
+    estimate_memory_for_processing
 )
 
 from .console import (
@@ -74,10 +84,24 @@ from .console import (
     dim
 )
 
+from .memory import (
+    get_memory_usage_mb,
+    get_memory_usage_gb,
+    log_memory,
+    estimate_array_memory_gb,
+    estimate_dataset_memory,
+    cleanup,
+    check_memory_available,
+    MemoryTracker,
+    print_memory_summary
+)
+
 
 __all__ = [
     # Data I/O
     'save_as_zarr',
+    'save_as_zarr_optimized',
+    'find_optimal_zarr_params',
     'load_dem_and_nanmask',
     'load_shapefile',
     'load_zarr_dataset',
@@ -108,6 +132,16 @@ __all__ = [
     'generate_file_lists',
     'get_map_dimensions',
     'generate_time_series',
+    # Date validation utilities
+    'validate_modis_date_range',
+    'check_aqua_availability',
+    'MODIS_FIRST_AVAILABLE_DATE',
+    'MODIS_TERRA_FIRST_AVAILABLE_DATE',
+    'MODIS_AQUA_FIRST_AVAILABLE_DATE',
+    'prompt_user_date_adjustment',
+    # Optimal chunking utilities
+    'calculate_optimal_chunks',
+    'estimate_memory_for_processing',
     
     # Console
     'suppress_warnings',
@@ -127,4 +161,15 @@ __all__ = [
     'white',
     'bold',
     'dim',
+    
+    # Memory utilities
+    'get_memory_usage_mb',
+    'get_memory_usage_gb',
+    'log_memory',
+    'estimate_array_memory_gb',
+    'estimate_dataset_memory',
+    'cleanup',
+    'check_memory_available',
+    'MemoryTracker',
+    'print_memory_summary',
 ] 
