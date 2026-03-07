@@ -159,10 +159,6 @@ extra:
       link: https://pypi.org/project/SnowMapPy
   
   generator: false
-  
-  analytics:
-    provider: google
-    property: G-XXXXXXXXXX
 
 # Navigation structure
 nav:
@@ -173,11 +169,11 @@ nav:
     - Google Earth Engine Setup: gee-setup.md
   - User Guide:
     - Overview: user-guide/index.md
-    - The Algorithm: user-guide/algorithm.md
+    - Algorithm: user-guide/algorithm.md
     - Interpolation Methods: user-guide/interpolation.md
     - Spatial Correction: user-guide/spatial-correction.md
-    - Memory Optimization: user-guide/memory.md
     - Output Formats: user-guide/output.md
+    - Memory Optimization: user-guide/memory.md
   - API Reference:
     - Overview: api/index.md
     - Core Module: api/core.md
@@ -190,5 +186,5 @@ nav:
     - Export Workflows: examples/export.md
     - Visualization: examples/visualization.md
   - CLI Reference: cli.md
-  - Contributing: contributing.md
   - Changelog: changelog.md
+  - Contributing: contributing.md

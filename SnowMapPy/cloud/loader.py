@@ -8,7 +8,7 @@ Fetches Terra (MOD10A1) and Aqua (MYD10A1) daily snow products
 for a specified region and time period.
 
 Authors: Haytam Elyoussfi, Hatim Bechri, Mostafa Bousbaa
-Version: 1.0.0
+Version: 0.0.1
 """
 
 import os

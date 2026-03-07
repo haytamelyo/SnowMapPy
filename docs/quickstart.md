@@ -4,7 +4,7 @@ Get up and running with SnowMapPy in under 5 minutes.
 
 ---
 
-## :one: Prerequisites Check
+## Prerequisites Check
 
 Before you begin, ensure:
 
@@ -14,7 +14,7 @@ Before you begin, ensure:
 
 ---
 
-## :two: Your First Analysis
+## Your First Analysis
 
 Here's a minimal example to process one month of snow cover data:
 
@@ -43,7 +43,7 @@ print(f"Successfully processed {len(result.time)} days of data!")
 
 ---
 
-## :three: Understanding the Output
+## Understanding the Output
 
 The result is an `xarray.Dataset` with gap-filled snow cover data:
 
@@ -58,8 +58,8 @@ Output:
 Dimensions:      (time: 31, y: 450, x: 380)
 Coordinates:
   * time         (time) datetime64[ns] 2020-01-01 ... 2020-01-31
-  * y            (y) float64 35.5 35.49 35.48 ... 31.02 31.01 31.0
-  * x            (x) float64 -9.5 -9.49 -9.48 ... -5.72 -5.71 -5.7
+  * y            (y) float64 ...
+  * x            (x) float64 ...
 Data variables:
     NDSI         (time, y, x) float16 ...
     ...
@@ -74,7 +74,7 @@ print(f"Shape: {day_1.shape}")
 print(f"Min: {day_1.min().values:.2f}, Max: {day_1.max().values:.2f}")
 
 # Get time series at a specific location
-lat, lon = 33.5, -7.0
+lat, lon = 46.8, 8.2  # Example: Swiss Alps
 point_ts = result['NDSI'].sel(y=lat, x=lon, method='nearest')
 print(f"Time series length: {len(point_ts)}")
 ```
@@ -108,7 +108,7 @@ with rasterio.open(
 
 ---
 
-## :four: Visualize Results
+## Visualize Results
 
 ### Static Map
 
@@ -151,7 +151,7 @@ anim.save('snow_animation.gif', writer='pillow', fps=5)
 
 ---
 
-## :five: Common Options
+## Common Options
 
 Customize the processing with these parameters:
 
@@ -180,7 +180,7 @@ result, counters = process_modis_ndsi_cloud(
 
 ---
 
-## :six: Next Steps
+## Next Steps
 
 Now that you've run your first analysis:
 
@@ -194,7 +194,7 @@ Now that you've run your first analysis:
 
 ---
 
-## :keyboard: Command Line Interface
+## Command-Line Interface
 
 Prefer the command line? SnowMapPy includes a full CLI:
 

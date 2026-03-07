@@ -29,23 +29,23 @@ description: High-performance MODIS NDSI snow cover processing for Google Earth 
 
 ---
 
-## :snowflake: What is SnowMapPy?
+## What is SnowMapPy?
 
 **SnowMapPy** is a Python package designed for researchers and practitioners working with snow cover data. It implements a **6-day moving window gap-filling algorithm** that combines MODIS Terra and Aqua observations to produce continuous, cloud-free daily snow cover time series.
 
 !!! success "Key Capabilities"
     
     - **Gap-Free Time Series**: Transform cloudy MODIS data into continuous daily observations
-    - **Sensor Fusion**: Combine Terra (morning) and Aqua (afternoon) for maximum coverage
-    - **Elevation-Aware**: DEM-based snow correction for high-altitude regions
+    - **Sensor Fusion**: Combine Terra (morning pass) and Aqua (afternoon pass) for maximum coverage
+    - **Elevation-Aware**: DEM-based snow correction for mountainous regions
     - **Memory Efficient**: Process 20+ years of data on machines with 8GB RAM
     - **Publication Ready**: Scientifically validated algorithms with full metadata
 
 ---
 
-## :chart_with_upwards_trend: The Science Behind It
+## The Science Behind It
 
-Snow cover mapping using satellite imagery faces a fundamental challenge: **cloud contamination**. On average, 50% of daily MODIS observations are obscured by clouds, making continuous monitoring impossible without gap-filling.
+Snow cover mapping using satellite imagery faces a fundamental challenge: **cloud contamination**. On average, 40-70% of daily MODIS observations are obscured by clouds depending on the region and season, making continuous monitoring impossible without gap-filling.
 
 SnowMapPy addresses this using a multi-step approach:
 
@@ -65,7 +65,7 @@ The **6-day moving window** (3 days before + current + 2 days after) captures te
 
 ---
 
-## :rocket: Quick Example
+## Quick Example
 
 ```python
 from SnowMapPy import process_modis_ndsi_cloud
@@ -87,7 +87,7 @@ print(f"Processed {len(result.time)} days of gap-filled snow cover data")
 ??? example "Sample Output"
     
     ```
-    SnowMapPy v1.0.0 | MODIS Snow Cover Gap-Filling
+    SnowMapPy v0.0.1 | MODIS Snow Cover Gap-Filling
     
     Processing Parameters
     ---------------------
@@ -112,7 +112,7 @@ print(f"Processed {len(result.time)} days of gap-filled snow cover data")
 
 ---
 
-## :sparkles: Key Features
+## Key Features
 
 <div class="grid cards" markdown>
 
@@ -126,7 +126,7 @@ print(f"Processed {len(result.time)} days of gap-filled snow cover data")
 
     ---
 
-    Combines Terra (10:30 AM) and Aqua (1:30 PM) observations for maximum daily coverage, prioritizing higher-quality morning observations.
+    Combines Terra (~10:30 AM local solar time) and Aqua (~1:30 PM local solar time) observations for maximum daily coverage, prioritizing morning observations.
 
 -   :material-speedometer:{ .lg .middle } **Numba Acceleration**
 
@@ -156,11 +156,11 @@ print(f"Processed {len(result.time)} days of gap-filled snow cover data")
 
 ---
 
-## :books: Documentation Overview
+## Documentation Overview
 
 | Section | Description |
 |---------|-------------|
-| [**Installation**](installation.md) | Install SnowMapPy via pip, conda, or from source |
+| [**Installation**](installation.md) | Install SnowMapPy via pip or from source |
 | [**Quick Start**](quickstart.md) | Get running in 5 minutes with a basic example |
 | [**User Guide**](user-guide/index.md) | In-depth explanations of all features |
 | [**API Reference**](api/index.md) | Complete API documentation with examples |
@@ -169,7 +169,7 @@ print(f"Processed {len(result.time)} days of gap-filled snow cover data")
 
 ---
 
-## :medal_military: Scientific Foundation
+## Scientific Foundation
 
 SnowMapPy implements algorithms validated in peer-reviewed research for snow cover mapping in mountainous regions:
 
@@ -179,9 +179,11 @@ SnowMapPy implements algorithms validated in peer-reviewed research for snow cov
     
     [:material-link: Read the paper](https://doi.org/10.1016/j.jag.2024.103851)
 
+The algorithms have been designed for general applicability and can be used for any region within MODIS coverage (global, 60°S to 84°N).
+
 ---
 
-## :busts_in_silhouette: Authors
+## Authors
 
 <div class="grid cards" markdown>
 
@@ -213,16 +215,16 @@ SnowMapPy implements algorithms validated in peer-reviewed research for snow cov
 
 ---
 
-## :heart: Community & Support
+## Community and Support
 
-- :material-github: [GitHub Issues](https://github.com/haytamelyo/SnowMapPy/issues) - Report bugs or request features
-- :material-star: [Star the repo](https://github.com/haytamelyo/SnowMapPy) - Show your support!
-- :material-account-group: [Contributing](contributing.md) - Help improve SnowMapPy
+- :material-github: [GitHub Issues](https://github.com/haytamelyo/SnowMapPy/issues) — Report bugs or request features
+- :material-star: [Star the repo](https://github.com/haytamelyo/SnowMapPy) — Show your support
+- :material-account-group: [Contributing](contributing.md) — Help improve SnowMapPy
 
 ---
 
 <div align="center" markdown>
 
-**Made with :snowflake: for the snow hydrology research community**
+**Built for the snow hydrology research community**
 
 </div>

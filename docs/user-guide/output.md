@@ -204,7 +204,7 @@ import pandas as pd
 ds = xr.open_zarr('output/study_area_NDSI.zarr')
 
 # Extract time series at a point
-lat, lon = 33.5, -7.0
+lat, lon = 46.8, 8.2  # Example coordinates
 ts = ds['NDSI'].sel(y=lat, x=lon, method='nearest')
 
 # Create DataFrame
@@ -280,7 +280,7 @@ ds = xr.open_zarr('output/study_area_NDSI.zarr')
 # Select bounding box
 subset = ds.sel(
     x=slice(-8.0, -6.0),
-    y=slice(34.0, 32.0)  # Note: y may be descending
+    y=slice(48.0, 46.0)  # Note: y may be in descending order
 )
 ```
 

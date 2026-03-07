@@ -13,8 +13,8 @@ This guide covers:
 | [Algorithm Overview](algorithm.md) | The science behind the gap-filling process |
 | [Interpolation Methods](interpolation.md) | Choosing the right gap-filling method |
 | [Spatial Correction](spatial-correction.md) | DEM-based snow adjustments |
-| [Memory Optimization](memory.md) | Processing large datasets efficiently |
 | [Output Formats](output.md) | Understanding and using output data |
+| [Memory Optimization](memory.md) | Processing large datasets efficiently |
 
 ---
 

@@ -193,8 +193,8 @@ result, counters = processor.process(
 
 | Product | Satellite | Collection | Resolution |
 |---------|-----------|------------|------------|
-| MOD10A1 | Terra | MODIS/006/MOD10A1 | 500m |
-| MYD10A1 | Aqua | MODIS/006/MYD10A1 | 500m |
+| MOD10A1 | Terra | MODIS/061/MOD10A1 | 500m |
+| MYD10A1 | Aqua | MODIS/061/MYD10A1 | 500m |
 
 ### DEM Data
 

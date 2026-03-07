@@ -26,7 +26,7 @@ Before installing SnowMapPy, ensure you have:
 
 ## Installation Methods
 
-### :material-package-variant: PyPI (Recommended)
+### PyPI (Recommended)
 
 Install the latest stable release from PyPI:
 
@@ -34,7 +34,7 @@ Install the latest stable release from PyPI:
 pip install SnowMapPy
 ```
 
-### :material-update: Upgrade Existing Installation
+### Upgrade Existing Installation
 
 To upgrade to the latest version:
 
@@ -42,7 +42,7 @@ To upgrade to the latest version:
 pip install --upgrade SnowMapPy
 ```
 
-### :material-source-branch: Development Version
+### Development Version
 
 Install the latest development version directly from GitHub:
 
@@ -50,7 +50,7 @@ Install the latest development version directly from GitHub:
 pip install git+https://github.com/haytamelyo/SnowMapPy.git
 ```
 
-### :material-download: From Source
+### From Source
 
 For development or to modify the code:
 
@@ -151,7 +151,7 @@ print("Google Earth Engine connected successfully!")
 Expected output:
 
 ```
-SnowMapPy version: 1.0.0
+SnowMapPy version: 0.0.1
 Google Earth Engine connected successfully!
 ```
 

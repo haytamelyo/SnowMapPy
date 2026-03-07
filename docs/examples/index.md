@@ -79,7 +79,7 @@ result, counters = process_modis_ndsi_cloud(
     spatial_correction_method="elevation_mean",
     output_dtype="float32",
     compression="zstd",
-    output_name="atlas_snow_5years"
+    output_name="snow_cover_5years"
 )
 ```
 
@@ -128,9 +128,9 @@ ds = xr.open_zarr('./output/snow_cover.zarr')
 
 # Define analysis points
 points = {
-    "Station A": (33.5, -7.2),
-    "Station B": (32.8, -6.5),
-    "Station C": (34.1, -7.8)
+    "Station A": (46.8, 8.2),
+    "Station B": (47.0, 9.5),
+    "Station C": (45.9, 7.8)
 }
 
 # Extract and plot time series

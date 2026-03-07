@@ -218,17 +218,17 @@ from SnowMapPy.cloud import initialize_gee
 initialize_gee(project="your-project-id")
 
 # Test by requesting a single image
-image = ee.Image("MODIS/006/MOD10A1/2020_01_01")
+image = ee.Image("MODIS/061/MOD10A1/2020_01_01")
 print("MODIS bands:", image.bandNames().getInfo())
 
 # Verify NDSI band exists
-print("✓ Google Earth Engine connected successfully!")
+print("Google Earth Engine connected successfully!")
 ```
 
 Expected output:
 ```
 MODIS bands: ['NDSI_Snow_Cover', 'NDSI_Snow_Cover_Basic_QA', ...]
-✓ Google Earth Engine connected successfully!
+Google Earth Engine connected successfully!
 ```
 
 ---

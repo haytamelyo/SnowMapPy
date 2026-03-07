@@ -15,7 +15,7 @@ The kernels handle:
 Performance: 50-200x faster than pure Python/scipy equivalents.
 
 Authors: Haytam Elyoussfi, Hatim Bechri
-Version: 1.0.0
+Version: 0.0.1
 """
 
 import numpy as np

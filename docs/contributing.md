@@ -8,11 +8,11 @@ Thank you for your interest in contributing to SnowMapPy!
 
 We welcome contributions of all kinds:
 
-- :bug: **Bug Reports** - Found a problem? Let us know!
-- :bulb: **Feature Requests** - Have an idea? We'd love to hear it!
-- :memo: **Documentation** - Help improve our docs
-- :computer: **Code** - Fix bugs or implement features
-- :test_tube: **Testing** - Help test new features
+- **Bug Reports** — Found a problem? Let us know
+- **Feature Requests** — Have an idea? We'd love to hear it
+- **Documentation** — Help improve our docs
+- **Code** — Fix bugs or implement features
+- **Testing** — Help test new features
 
 ---
 
@@ -187,8 +187,8 @@ We are committed to providing a welcoming and inclusive environment for all cont
 
 ## Questions?
 
-- :material-github: Open a [Discussion](https://github.com/haytamelyo/SnowMapPy/discussions)
-- :material-email: Email the maintainers
+- Open a [Discussion](https://github.com/haytamelyo/SnowMapPy/discussions) on GitHub
+- Email the maintainers
 
 ---
 
@@ -200,4 +200,4 @@ Contributors are recognized in:
 - Contributors list
 - Social media announcements
 
-Thank you for helping make SnowMapPy better! :heart:
+Thank you for helping make SnowMapPy better!

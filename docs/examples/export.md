@@ -211,9 +211,9 @@ ds = xr.open_zarr('./output/snow_cover.zarr')
 
 # Define analysis points
 points = {
-    'station_A': (33.5, -7.2),
-    'station_B': (32.8, -6.5),
-    'station_C': (34.1, -7.8)
+    'station_A': (46.8, 8.2),
+    'station_B': (47.0, 9.5),
+    'station_C': (45.9, 7.8)
 }
 
 # Extract time series

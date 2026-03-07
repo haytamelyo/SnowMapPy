@@ -97,7 +97,7 @@ result, counters = process_modis_ndsi_cloud(
     spatial_correction_method="elevation_mean",
     output_dtype="float32",
     compression="zstd",
-    output_name="atlas_snow_cover"
+    output_name="snow_cover_multiyear"
 )
 
 # Access results
@@ -123,5 +123,5 @@ Package version string.
 ```python
 from SnowMapPy import __version__
 
-print(__version__)  # "1.0.0"
+print(__version__)  # "0.0.1"
 ```

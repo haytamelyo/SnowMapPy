@@ -185,11 +185,15 @@ def apply_spatial_snow_correction(
 
 ## Validation
 
-Spatial correction has been validated to improve accuracy in:
+Spatial correction has been validated to improve accuracy in mountainous regions:
 
-- **High Atlas Mountains, Morocco** - 5-8% reduction in commission errors
-- **Alpine regions** - Better snow line detection
-- **Transitional elevations** - Reduced noise at forest-alpine boundary
+- **High-relief mountain ranges** — 5-8% reduction in commission errors
+- **Alpine and subalpine zones** — Improved snow line detection
+- **Transitional elevations** — Reduced noise at forest-alpine boundaries
+
+!!! info "Regional Applicability"
+    
+    While initially validated in the Atlas Mountains of Morocco (Bousbaa et al., 2024), the elevation-based correction approach is based on universal physical principles and is applicable to any mountainous region worldwide.
 
 ---
 

@@ -74,7 +74,7 @@ snowmappy process \
     --spatial-correction elevation_mean \
     --dtype float32 \
     --compression zstd \
-    --name atlas_snow_cover
+    --name snow_cover_multiyear
 ```
 
 **Short form:**
@@ -122,8 +122,8 @@ Dimensions:
 
 Coordinates:
   time: 2020-01-01 to 2020-12-31
-  y: 31.0 to 34.5
-  x: -8.5 to -5.0
+  y: <min_lat> to <max_lat>
+  x: <min_lon> to <max_lon>
 
 Variables:
   NDSI: float16 (366, 350, 280)

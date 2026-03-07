@@ -43,7 +43,7 @@ License: MIT
 Repository: https://github.com/haytamelyo/SnowMapPy
 """
 
-__version__ = "1.0.0"
+__version__ = "0.0.1"
 __author__ = "Haytam Elyoussfi, Hatim Bechri, Mostafa Bousbaa"
 __email__ = "haytam.elyoussfi@um6p.ma"
 __license__ = "MIT"

@@ -34,7 +34,8 @@ import geopandas as gpd
 from shapely.geometry import box
 
 # Define bounding box (minx, miny, maxx, maxy)
-bounds = box(-8.5, 31.0, -5.0, 34.5)
+# Example: a mountain study area
+bounds = box(6.5, 45.5, 10.5, 47.5)
 gdf = gpd.GeoDataFrame({'geometry': [bounds]}, crs="EPSG:4326")
 gdf.to_file("study_area.shp")
 shapefile_path = "study_area.shp"
@@ -64,7 +65,7 @@ result, counters = process_modis_ndsi_cloud(
 Expected console output:
 
 ```
-SnowMapPy v1.0.0 | MODIS Snow Cover Gap-Filling
+SnowMapPy v0.0.1 | MODIS Snow Cover Gap-Filling
 
 Processing Parameters
 ---------------------
@@ -107,8 +108,8 @@ Output:
 Dimensions:  (time: 366, y: 350, x: 280)
 Coordinates:
   * time     (time) datetime64[ns] 2020-01-01 ... 2020-12-31
-  * y        (y) float64 34.5 34.49 34.48 ... 31.02 31.01 31.0
-  * x        (x) float64 -8.5 -8.49 -8.48 ... -5.02 -5.01 -5.0
+  * y        (y) float64 ...
+  * x        (x) float64 ...
 Data variables:
     NDSI     (time, y, x) float16 ...
 
@@ -161,7 +162,7 @@ plt.show()
 
 ```python
 # Extract time series at a location
-lat, lon = 33.0, -7.0
+lat, lon = 46.8, 8.2  # Example coordinates
 ts = result['NDSI'].sel(y=lat, x=lon, method='nearest')
 
 # Plot time series
@@ -169,7 +170,7 @@ fig, ax = plt.subplots(figsize=(12, 4))
 ts.plot(ax=ax, linewidth=1)
 ax.set_xlabel('Date')
 ax.set_ylabel('NDSI (%)')
-ax.set_title(f'Snow Cover Time Series at ({lat}°N, {abs(lon)}°W)')
+ax.set_title(f'Snow Cover Time Series at ({lat}°N, {lon}°E)')
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.savefig('snow_timeseries.png', dpi=150)

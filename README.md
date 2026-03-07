@@ -359,7 +359,7 @@ gdf.to_file("output.shp")
   author       = {Elyoussfi, Haytam and Bechri, Hatim and Bousbaa, Mostafa},
   title        = {SnowMapPy: MODIS Snow Cover Processing for Google Earth Engine},
   year         = {2025},
-  version      = {1.0.0},
+  version      = {0.0.1},
   publisher    = {GitHub},
   url          = {https://github.com/haytamelyo/SnowMapPy}
 }

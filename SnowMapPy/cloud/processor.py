@@ -11,7 +11,7 @@ Implements a 6-day moving window algorithm for gap-filling:
     - Numba-accelerated interpolation
 
 Authors: Haytam Elyoussfi, Hatim Bechri
-Version: 1.0.0
+Version: 0.0.1
 """
 
 import os
@@ -682,7 +682,7 @@ def modis_time_series_cloud(
         
         # === Processing Information ===
         "processing_level": "Level 3 (Gap-filled)",
-        "processing_software": "SnowMapPy v1.0.0",
+        "processing_software": "SnowMapPy v0.0.1",
         "processing_software_url": "https://github.com/haytamelyo/SnowMapPy",
         "processing_method": "6-day moving window gap-filling (3 days before, current day, 2 days after)",
         "interpolation_method": interpolation_method,

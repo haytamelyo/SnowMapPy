@@ -51,10 +51,10 @@ For each pixel on day `t`:
 
 MODIS operates on two satellites:
 
-| Satellite | Pass Time | Product |
-|-----------|-----------|---------|
-| **Terra** | ~10:30 AM | MOD10A1 |
-| **Aqua** | ~1:30 PM | MYD10A1 |
+| Satellite | Equatorial Crossing Time | Product |
+|-----------|--------------------------|---------|  
+| **Terra** | ~10:30 AM local solar time | MOD10A1 |
+| **Aqua** | ~1:30 PM local solar time | MYD10A1 |
 
 SnowMapPy combines both for maximum coverage:
 
@@ -73,9 +73,9 @@ for each pixel:
     
     Morning observations (Terra) typically have:
     
-    - Less afternoon cloud buildup
-    - Lower atmospheric water vapor
-    - More consistent sun angles
+    - Less afternoon convective cloud buildup
+    - Lower atmospheric water vapor content
+    - More consistent solar illumination geometry
 
 ---
 
@@ -150,13 +150,7 @@ def process_time_series(data, ...):
 
 ## Validation
 
-The algorithm has been validated against:
-
-- In-situ snow station measurements
-- Landsat snow products (30m validation)
-- Regional snow cover maps
-
-See the [Scientific Foundation](../index.md#medal_military-scientific-foundation) section for detailed validation results.
+See the [Scientific Foundation](../index.md#scientific-foundation) section for the related publication and detailed validation results.
 
 ---
 

@@ -6,9 +6,9 @@
 
 Before deploying to PyPI and GitHub Pages:
 
-1. **Version Check**: Confirm version is `1.0.0` across all files
+1. **Version Check**: Confirm version is `0.0.1` across all files
    ```bash
-   grep -r "1.0.0" --include="*.py" --include="*.toml"
+   grep -r "0.0.1" --include="*.py" --include="*.toml"
    ```
 
 2. **Run Tests**: Ensure all functionality works
@@ -85,8 +85,8 @@ python -m build
 ```
 
 This creates:
-- `dist/SnowMapPy-1.0.0.tar.gz` (source distribution)
-- `dist/SnowMapPy-1.0.0-py3-none-any.whl` (wheel)
+- `dist/SnowMapPy-0.0.1.tar.gz` (source distribution)
+- `dist/SnowMapPy-0.0.1-py3-none-any.whl` (wheel)
 
 ### 3. Test on Test PyPI First
 
@@ -181,14 +181,14 @@ These are excluded by `.gitignore` and `MANIFEST.in`:
 ```bash
 pip install SnowMapPy
 python -c "import SnowMapPy; print(SnowMapPy.__version__)"
-# Should print: 1.0.0
+# Should print: 0.0.1
 ```
 
 ### Test CLI
 
 ```bash
 snowmappy --version
-# Should print: SnowMapPy v1.0.0
+# Should print: SnowMapPy v0.0.1
 ```
 
 ### Test Documentation
