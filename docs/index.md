@@ -173,6 +173,12 @@ print(f"Processed {len(result.time)} days of gap-filled snow cover data")
 
 SnowMapPy implements algorithms validated in peer-reviewed research for snow cover mapping in mountainous regions:
 
+!!! quote "Package Reference"
+    
+    Elyoussfi, H., Boudhar, A., Belaqziz, S., Bousbaa, M., Bechri, H., Sproles, E. A., & Benzhair, F. (2025). **SnowMapPy v1.0: A Python Package for Automated Snow Cover Mapping and Monitoring in Mountain Regions.** *EGU General Assembly 2025*, Vienna, Austria, 27 Apr–2 May 2025, EGU25-20632.
+    
+    [:material-link: View abstract](https://doi.org/10.5194/egusphere-egu25-20632)
+
 !!! quote "Related Publication"
     
     Bousbaa, M., Boudhar, A., Kinnard, C., Elyoussfi, H., Karaoui, I., Eljabiri, Y., Bouamri, H., & Chehbouni, A. (2024). **An accurate snow cover product for the Moroccan Atlas Mountains: Optimization of the MODIS NDSI index threshold and development of snow fraction estimation models.** *International Journal of Applied Earth Observation and Geoinformation*, 129, 103851.

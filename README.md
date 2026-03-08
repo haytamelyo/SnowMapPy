@@ -354,6 +354,10 @@ gdf.to_file("output.shp")
 
 ## Citation
 
+If you use SnowMapPy in your research, please cite the package and the relevant publications below.
+
+### Software
+
 ```bibtex
 @software{snowmappy2025,
   author       = {Elyoussfi, Haytam and Bechri, Hatim and Bousbaa, Mostafa},
@@ -365,7 +369,9 @@ gdf.to_file("output.shp")
 }
 ```
 
-### Related Publication
+### Related Publications
+
+Elyoussfi, H., Boudhar, A., Belaqziz, S., Bousbaa, M., Bechri, H., Sproles, E. A., and Benzhair, F. (2025). SnowMapPy v1.0: A Python Package for Automated Snow Cover Mapping and Monitoring in Mountain Regions. *EGU General Assembly 2025*, Vienna, Austria, 27 Apr–2 May 2025, EGU25-20632. https://doi.org/10.5194/egusphere-egu25-20632
 
 Bousbaa, M., et al. (2024). An accurate snow cover product for the Moroccan Atlas Mountains. *International Journal of Applied Earth Observation and Geoinformation*, 129, 103851. https://doi.org/10.1016/j.jag.2024.103851
 
